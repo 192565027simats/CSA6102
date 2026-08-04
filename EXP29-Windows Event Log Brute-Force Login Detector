@@ -1,0 +1,98 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyN+s3DGc12REODql5cGgPLN",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/192565027simats/CSA6102/blob/main/EXP29-Windows%20Event%20Log%20Brute-Force%20Login%20Detector\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "-LBBRt6rWZD-",
+        "outputId": "7da91569-77d1-4595-ea7e-af7904060e3f"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "All test cases passed.\n"
+          ]
+        }
+      ],
+      "source": [
+        "from datetime import datetime, timedelta\n",
+        "\n",
+        "def test_experiment1():\n",
+        "    events = []\n",
+        "    base = datetime(2026, 1, 15, 3, 40, 0)\n",
+        "\n",
+        "    # Simulate 6 failed login attempts\n",
+        "    for i in range(6):\n",
+        "        events.append({\n",
+        "            \"event_id\": 4625,\n",
+        "            \"account\": \"Administrator\",\n",
+        "            \"timestamp\": (base + timedelta(seconds=15 * i)).strftime(\"%Y-%m-%d %H:%M:%S\"),\n",
+        "            \"source_ip\": \"203.0.113.7\",\n",
+        "        })\n",
+        "\n",
+        "    # Simulate a successful login after the failed attempts\n",
+        "    events.append({\n",
+        "        \"event_id\": 4624,\n",
+        "        \"account\": \"Administrator\",\n",
+        "        \"timestamp\": (base + timedelta(seconds=100)).strftime(\"%Y-%m-%d %H:%M:%S\"),\n",
+        "        \"source_ip\": \"203.0.113.7\",\n",
+        "    })\n",
+        "\n",
+        "    # Simulate a normal user login\n",
+        "    events.append({\n",
+        "        \"event_id\": 4624,\n",
+        "        \"account\": \"jsmith\",\n",
+        "        \"timestamp\": \"2026-01-15 09:00:00\",\n",
+        "        \"source_ip\": \"10.0.0.5\",\n",
+        "    })\n",
+        "\n",
+        "    # Run brute-force detection\n",
+        "    results = detect_bruteforce(events)\n",
+        "\n",
+        "    # Test assertions\n",
+        "    assert \"Administrator\" in results\n",
+        "    assert results[\"Administrator\"][\"failed_attempts\"] == 6\n",
+        "    assert results[\"Administrator\"][\"followed_by_success\"] is True\n",
+        "    assert results[\"Administrator\"][\"source_ips\"] == [\"203.0.113.7\"]\n",
+        "    assert \"jsmith\" not in results\n",
+        "\n",
+        "    print(\"All test cases passed.\")\n",
+        "\n",
+        "\n",
+        "# Run the test\n",
+        "test_experiment1()"
+      ]
+    }
+  ]
+}
